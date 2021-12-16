@@ -1,7 +1,7 @@
 #!/usr/bin/env awk -f
 BEGIN {
     split("@abcdefghijklmnopqrstuvwxyz", from, "")
-    split("abcdefghjjkmmnppqrstuvwxyza", tonext, "")
+    split("@bcdefghjjkmmnppqrstuvwxyza", tonext, "")
     split("@bcdefgh@@@@@@@@qrstuvwxyz@", toinc, "")
     for (i in from) {
         chnext[from[i]] = tonext[i]
@@ -35,10 +35,11 @@ function invalid(p,    i, matched) {
     for (d = 1; d <= 7; ++d) if (pass[d] in chbad) {
         pass[d] = chnext[pass[d]]
         while (++d < 8) pass[d] = "a"
-        pass[d] = "@"
+        pass[8] = "@"
     }
     do {
         for (d = 8; d >= 1; --d) if ((pass[d] = chnext[pass[d]]) != "a") break
+        if (pass[8] == "@") pass[8] = "a"
     } while (invalid(pass))
     do {
         for (d = 8; d >= 1; --d) if ((pass[d] = chnext[pass[d]]) != "a") break

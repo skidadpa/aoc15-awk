@@ -1,30 +1,25 @@
 #!/usr/bin/env awk -f
-(NF != 1 || $0 !~ /^[0-9]+$/) { print "DATA ERROR"; exit _exit=1 }
-{ jar[NR] = $1 }
-function permute(combos, selected, total, jars,    count, i, nxt, left) {
+(NF != 1 || $0 !~ /^[[:digit:]]+$/) { print "DATA ERROR"; exit _exit=1 }
+{ jar_sizes[NR] = int($1) }
+function ways_to_fill(jars, nog,   count, i, j, jars_to_try, nog_needed, avail) {
     count = 0
-    if (length(jars) < 0) return 0
-    if (length(jars) == 1) for (i in jars) {
-        if (total + jars[i] == 150) {
-            combos[selected i] = 1
-            ++count
+    for (i = 1; i <= length(jars); ++i) {
+        if (jars[i] == nog) ++count
+        if (jars[i] >= nog) continue
+        nog_needed = nog - jars[i]
+        delete jars_to_try
+        avail = 0
+        for (j = 1; j <= length(jars) - i; ++j) {
+            jars_to_try[j] = jars[i + j]
+            avail += jars_to_try[j]
         }
-        return count
-    }
-    for (nxt in jars) {
-        if (total + jars[nxt] == 150) {
-            combos[selected nxt] = 1
-            ++count
-        } else if (total + jars[nxt] < 150) {
-            split("", left)
-            for (i in jars) if (i > nxt) left[i] = jars[i]
-            count += permute(combos, selected nxt SUBSEP, total + jars[nxt], left)
-        } else {
-        }
+        if (avail == nog_needed) ++count
+        if (avail <= nog_needed) return count
+        count += ways_to_fill(jars_to_try, nog_needed)
     }
     return count
 }
 END {
     if (_exit) exit
-    print permute(combinations, "", 0, jar)
+    print ways_to_fill(jar_sizes, 150)
 }

@@ -1,33 +1,68 @@
 #!/usr/bin/env awk -f
-function replace_join(array, replacing, with,    i, val, result) {
-    for (i in array) {
-        val = (i == replacing) ? with : array[i]
-        if (result) result = result SUBSEP val; else result = val
-    }
-    return result
+BEGIN {
+    FPAT = "[A-Z][a-z]?"
+    DEBUG = 0
 }
-BEGIN { FPAT = "[A-Z][a-z]?" }
 /^[A-Z][a-z]? => [A-Z]/ {
-    r = $2
-    for (i = 3; i <= NF; ++i) r = r SUBSEP $i
-    ++nreplacements[$1]
-    replacements[$1,nreplacements[$1]] = r
+    r = ""
+    for (i = 2; i <= NF; ++i) r = r $i
+    forward[$1] = r
+    backward[(11 - NF)/2][r] = $1
     next
 }
 /e => [A-Z]/ {
     r = $1
-    for (i = 2; i <= NF; ++i) r = r SUBSEP $i
-    ++nreplacements["e"]
-    replacements["e",nreplacements[$1]] = r
+    for (i = 2; i <= NF; ++i) r = r $i
+    targets[r] = 1
     next
 }
 /=>/ { print "DATA ERROR"; exit _exit=1 }
 (NF > 0) {
-    delete element
-    for (i = 1; i <= NF; ++i) element[i] = $i
-    delete elements
-    for (i = 1; i <= NF; ++i) if (element[i] in nreplacements)
-        for (j = 1; j <= nreplacements[element[i]]; ++j)
-            elements[replace_join(element, i, replacements[element[i],j])] = 1
-    print length(elements)
+    # for (i in backward) {
+    #     for (r in backward[i]) {
+    #         print i, backward[i][r], "=>", r
+    #     }
+    # }
+    for (level = 2; level <= 18; ++level) {
+        if (DEBUG) print "Calculating level", level, "forward moves"
+        prev_level = level - 1
+        split("", next_targets)
+        for (target in targets) if (targets[target] == prev_level) {
+            for (source in forward) {
+                prefix = ""
+                suffix = target
+                while (pos = index(suffix, source)) {
+                    prefix = prefix substr(suffix, 1, pos - 1)
+                    suffix = substr(suffix, pos + length(source))
+                    next_targets[prefix forward[source] suffix] = level
+                    prefix = prefix source
+                }
+            }
+        }
+        for (target in next_targets) {
+            if (!(target in targets)) {
+                targets[target] = next_targets[target]
+            }
+        }
+    }
+    element = $0
+    matched = 1
+    substitutions = 0
+    while (matched) {
+        for (l in backward) {
+            for (target in backward[l]) {
+                matched = sub(target, backward[l][target], element)
+                substitutions += matched
+                if (DEBUG && matched) print substitutions, ":", element
+                if (matched) break
+            }
+            if (matched) break
+        }
+        if (element in targets) {
+            substitutions += targets[element]
+            element = "e"
+            matched = 0
+        }
+    }
+    print "After", substitutions, "substitutions, reached", element
 }

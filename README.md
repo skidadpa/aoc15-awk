@@ -18,13 +18,6 @@ Here are my solutions. There is a folder for each day, each containing:
 
 Status
 ------
-I had gotten through the first have of day 19, although the second half
-proved a bit tricky, especially in AWK. The solution can be deduced via
-some study into the nature of the data itself. That still seems like a
-bit of a cheat, although perhaps I may use that mechanism in order to
-move forward. Meanwhile, I'll give it another try. We're into the 2022
-challenges now, so I'm taking a look again.
-
 I had previously logged in using a different mechanism (probably email),
 although for 2022 I used my GitHub credentials, and the inputs/solutions
 are different. So I'm updating the repo to match the new problem set. I

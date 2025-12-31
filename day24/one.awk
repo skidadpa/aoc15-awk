@@ -1,4 +1,4 @@
-#!/usr/bin/env awk -f
+#!/usr/bin/env gawk -f
 BEGIN {
     DEBUG = 0
 }
